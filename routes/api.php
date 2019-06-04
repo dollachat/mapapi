@@ -16,3 +16,4 @@ use Illuminate\Http\Request;
 Route::post('/findrestaurant', 'Api\MapController@index');
 Route::post('/testapi', 'Api\MapController@test');
 Route::get('/get_photo/{maxwidth}/{photoreference}', 'Api\MapController@get_photo');
+Route::post('/next_set', 'Api\MapController@next_set');

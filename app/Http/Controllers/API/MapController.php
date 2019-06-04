@@ -49,40 +49,40 @@ class MapController extends Controller
             ];
         $find_nearby_response = $client->request('GET','nearbysearch/json?',$nearby_params);
         $find_nearby_body =  json_decode($find_nearby_response->getBody());
-        $next_page_token = $find_nearby_body->next_page_token; // use for next set of result
-        $restaurants = $find_nearby_body->results; // get array of result , maximun return from google is 20 items
 
         return response()->json($find_nearby_body);
     }
 
-    public function test(Request $request)
-    {
-        $test = [
-          ['name'=>'John','age'=>'24'],
-          ['name'=>'Dan','age'=>'26'],
-          ['name'=>'Jing','age'=>'44'],
-          ['name'=>'Man','age'=>'34'],
-          ['name'=>'Free','age'=>'64'],
-          ['name'=>'Mon','age'=>'10'],
-        ];
 
-        return response()->json($test);
+    public function next_set(Request $request)
+    {
+      // same with nearby search function
+      $client = new Client([
+          'base_uri' => 'https://maps.googleapis.com/maps/api/place/',
+      ]);
+
+
+
+      $next_page_param = [
+          'query' => [
+              'pagetoken' => $request->next_page_token,
+              'key' => 'AIzaSyAzQ5c-32YyNKOL9ZxV8FKGrypLtx2Unic'
+              ]
+          ];
+      $find_nearby_response = $client->request('GET','nearbysearch/json?',$next_page_param);
+      $find_nearby_body =  json_decode($find_nearby_response->getBody());
+
+      return response()->json($find_nearby_body);
     }
+
     public function get_photo($maxwidth,$photoreference)
     {
       $api_key = "AIzaSyAzQ5c-32YyNKOL9ZxV8FKGrypLtx2Unic";
       $maxwidth = (string)$maxwidth;
       $photoreference = (string)$photoreference;
       $url = 'https://maps.googleapis.com/maps/api/place/photo?maxwidth='.$maxwidth.'&photoreference='.$photoreference.'&key='.$api_key;
-      // $url ='https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=CmRaAAAABK4wI5XrTtVhwqqWKPaR2J2bTMU-AAkttZAWP6jkLfs9tGSEhYOwkN5UdBqEUgkqB2WvMtj4SA3GgDIOsvsGBkW3b0Yq_pIi8CdWSlIXn-ZD5LuT7cQPENS5D8RSYLhdEhA8042dW4DGpEt0efA08BHnGhSlUeBpjwixP3hBpPpIc11gfNVrmw&key=AIzaSyAzQ5c-32YyNKOL9ZxV8FKGrypLtx2Unic';
-      // $client = new Client();
-      // $response = $client->request('GET',$url);
-      // $response = $response->getBody();
       $result = file_get_contents($url);
-      // Storage::put('file.jpg', $result);
       return $result;
-      // dd($result);
-      // echo $response;
-        // return response()->json($test);
+
     }
 }
