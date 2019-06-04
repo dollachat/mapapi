@@ -5,6 +5,8 @@ namespace App\Http\Controllers\API;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage; // use storage in laravel
+use Illuminate\Support\Facades\Cache; // cache lib
+
 // Guzzle -> for api request in php
 use GuzzleHttp\Client;
 
@@ -15,8 +17,15 @@ class MapController extends Controller
     public function index(Request $request)
     {
         if(!$request->has('location')){
+          // error when no location from search box
             $this->error_request();
         }
+        if(Cache::get( 'locationkey') === $request->location){
+          // if location match cache key return cache
+          $returncache = json_decode(Cache::get( 'nearbycache'));
+          return response()->json($returncache);
+
+        } else {
         $place_params = [
             'query' => [
                 'input' => $request->location,
@@ -39,6 +48,10 @@ class MapController extends Controller
 
         $location = (string)$lat.','.(string)$lng;
 
+        /*
+        use find place to get lat and lng of search place ie. Bangsue then use nearbysearch of that lat and lng
+        */
+
         $nearby_params = [
             'query' => [
                 'location' => $location,
@@ -49,8 +62,10 @@ class MapController extends Controller
             ];
         $find_nearby_response = $client->request('GET','nearbysearch/json?',$nearby_params);
         $find_nearby_body =  json_decode($find_nearby_response->getBody());
-
+        Cache::put( 'locationkey', $request->location , 300);  // cache for 5 minutes
+        Cache::put( 'nearbycache', json_encode($find_nearby_body) , 300);  // cache for 5 minutes
         return response()->json($find_nearby_body);
+      }
     }
 
 
@@ -77,6 +92,9 @@ class MapController extends Controller
 
     public function get_photo($maxwidth,$photoreference)
     {
+      /*
+      return img from photoreference to src tag of html
+      */
       $api_key = "AIzaSyAzQ5c-32YyNKOL9ZxV8FKGrypLtx2Unic";
       $maxwidth = (string)$maxwidth;
       $photoreference = (string)$photoreference;
