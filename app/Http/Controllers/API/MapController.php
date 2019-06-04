@@ -17,7 +17,7 @@ class MapController extends Controller
     public function index(Request $request)
     {
         if(!$request->has('location')){
-          // error when no location from search box
+          // error when no location
             $this->error_request();
         }
         if(Cache::get( 'locationkey') === $request->location){
@@ -42,6 +42,10 @@ class MapController extends Controller
         $find_place_response = $client->request('GET','findplacefromtext/json?',$place_params);
         $find_place_body =  json_decode($find_place_response->getBody());
 
+        if($find_place_body->status === 'ZERO_RESULTS'){
+          // no result
+          return response()->json($find_place_body);
+        }
         $formatted_address = $find_place_body->candidates[0]->formatted_address;
         $lat = $find_place_body->candidates[0]->geometry->location->lat;
         $lng = $find_place_body->candidates[0]->geometry->location->lng;
